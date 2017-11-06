@@ -1,10 +1,6 @@
 // The migrations to be run sync
 const migrations = [
   require('./resources'),
-  require('./resourceFunction'),
-  require('./resourceDropFunction'),
-  require('./resourceTrigger'),
-  require('./resourceDropTrigger'),
   require('./resourceHasResource'),
   require('./groups'),
   require('./templates'),
@@ -13,7 +9,8 @@ const migrations = [
   require('./itemHasItem'),
   require('./itemVersions'),
   require('./content'),
-  require('./fields')
+  require('./fields'),
+  require('./resourceFunctions.js')
 ]
 
 module.exports = {
@@ -21,7 +18,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       runNextMigration(0)
       function runNextMigration (count) {
-        console.log(count, migrations.length, count <= migrations.length - 1);
+        console.log(count, migrations.length, count <= migrations.length - 1)
         if (count <= migrations.length - 1) {
           migrations[count].up(queryInterface, Sequelize)
             .then(r => {
@@ -41,8 +38,8 @@ module.exports = {
     migrations.reverse()
     return new Promise((resolve, reject) => {
       runNextMigration(0)
-      function runNextMigration(count) {
-        console.log(count, migrations.length, count <= migrations.length - 1);
+      function runNextMigration (count) {
+        console.log(count, migrations.length, count <= migrations.length - 1)
         if (count <= migrations.length - 1) {
           migrations[count].down(queryInterface, Sequelize)
             .then(r => {
