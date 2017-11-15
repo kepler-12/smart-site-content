@@ -1,15 +1,15 @@
 // The migrations to be run sync
 const migrations = [
   require('./resources'),
-  require('./resourceHasResource'),
-  require('./groups'),
-  require('./templates'),
+  // require('./resourceHasResource'),
+  // require('./groups'),
+  // require('./templates'),
   require('./versions'),
   require('./items'),
-  require('./itemHasItem'),
-  require('./itemVersions'),
-  require('./content'),
+  // require('./itemHasItem'),
+  // require('./itemVersions'),
   require('./fields'),
+  require('./content'),  
   require('./resourceFunctions.js')
 ]
 

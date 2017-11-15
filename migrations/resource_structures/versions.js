@@ -9,35 +9,29 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      templateId: {
+      field_set_id: {
+        type: Sequelize.INTEGER
+      },
+      field_set_table: {
+        type: Sequelize.TEXT
+      },
+      major_version: {
         type: Sequelize.INTEGER,
-        references: {
-          model: 'templates',
-          key: 'id'
-        }
+        defaultValue: 1
       },
-      name: {
-        type: Sequelize.STRING
+      minor_version: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
-      html: {
-        type: Sequelize.STRING
-      },
-      css: {
-        type: Sequelize.STRING
-      },
-      js: {
-        type: Sequelize.STRING
-      },
-      file: {
-        type: Sequelize.STRING
-      },
-      createdAt: {
+      created_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       }
     })
   },

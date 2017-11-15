@@ -1,8 +1,11 @@
-DROP TRIGGER IF EXISTS register_resource ON resources;
+--  DROP DATABASE smartsite_8;
+ 
+--  CREATE DATABASE smartsite_8 WITH OWNER smartsiterole;
 
-DROP TRIGGER IF EXISTS drop_resource on resources;
-
-DROP FUNCTION IF EXISTS register_resource;
-
-DROP FUNCTION IF EXISTS drop_resource;
-
+CREATE OR REPLACE FUNCTION dropdb() RETURNS void as $$
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'smartsite_8';
+DROP DATABASE smartsite_8;
+CREATE DATABASE smartsite_8 WITH OWNER smartsiterole;
+$$ LANGUAGE SQL STABLE;

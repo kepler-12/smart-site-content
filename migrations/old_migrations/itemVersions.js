@@ -2,32 +2,28 @@
 'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('itemHasItem', {
+    return queryInterface.createTable('itemVersions', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      itemId: {
+      item_id: {
         type: Sequelize.INTEGER,
         references: {
           model: 'items',
           key: 'id'
         }
       },
-      hasItemId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'items',
-          key: 'id'
-        }
+      name: {
+        type: Sequelize.STRING
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE
       }
@@ -35,7 +31,7 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('itemHasItem', {
+    return queryInterface.dropTable('itemVersions', {
       cascade: true
     })
   }

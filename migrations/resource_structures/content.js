@@ -9,17 +9,23 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      itemId: {
+      field_set_id: {
+        type: Sequelize.INTEGER
+      },
+      field_set_table: {
+        type: Sequelize.STRING
+      },
+      version_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'items',
+          model: 'versions',
           key: 'id'
         }
       },
-      version: {
+      field_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'itemVersions',
+          model: 'fields',
           key: 'id'
         }
       },
@@ -29,13 +35,15 @@ module.exports = {
       value: {
         type: Sequelize.STRING
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       }
     })
   },

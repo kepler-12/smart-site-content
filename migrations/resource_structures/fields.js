@@ -9,12 +9,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      resourceId: {
+      resource_id: {
         type: Sequelize.INTEGER,
         references: {
           model: 'resources',
           key: 'id'
         }
+      },
+      field_set: {
+        type: Sequelize.STRING
       },
       name: {
         type: Sequelize.STRING
@@ -22,19 +25,26 @@ module.exports = {
       type: {
         type: Sequelize.STRING
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       }
     })
+    .then(() => {
+      return queryInterface.addIndex('fields',
+        {
+          fields: ['field_set', 'name', 'resource_id'],
+          name: 'composite_index',
+          type: 'UNIQUE'
+        })
+    })
   },
-
   down: (queryInterface, Sequelize) => {
     console.log('FIELDS DOWN')
     return queryInterface.dropTable('fields', {
