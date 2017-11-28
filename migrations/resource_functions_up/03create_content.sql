@@ -2,19 +2,33 @@ CREATE OR REPLACE FUNCTION create_field_function (resource_name text, field_set 
   DECLARE
     resource_id INTEGER := (SELECT id FROM resources WHERE name = resource_name);
   BEGIN
-  EXECUTE format('CREATE OR REPLACE FUNCTION %I_%I (thing %I) RETURNS %I AS $$
-    SELECT content.value::%I from content, "versions" WHERE content.version_id = versions.id AND "versions".id = (SELECT current_version_id(thing.id, %L))
-    AND content.name = %L AND thing.id = content.field_set_id $$ language sql stable', 
-    (SELECT resource_field_set_name(resource_name, field_set)), -- First part of function name 
-    field_name, -- second part of function name
-    -- field_set, -- parameter
-    (SELECT resource_field_set_name(resource_name, field_set)), -- PARAMETER type
-    field_type, -- returns type
-    field_type, -- casted type
-    field_set, -- Content version first pararm field_set
-    field_name  -- content name,
-    );
-  END 
+    EXECUTE format('CREATE OR REPLACE FUNCTION %I_%I (thing %I) RETURNS %I AS $$
+      SELECT content.value::%I from content, "versions" WHERE content.version_id = versions.id AND "versions".id = (SELECT current_version_id(thing.id, %L))
+      AND content.name = %L AND thing.id = content.field_set_id $$ language sql stable', 
+      (SELECT resource_field_set_name(resource_name, field_set)), -- First part of function name 
+      field_name, -- second part of function name
+      -- field_set, -- parameter
+      (SELECT resource_field_set_name(resource_name, field_set)), -- PARAMETER type
+      field_type, -- returns type
+      field_type, -- casted type
+      field_set, -- Content version first pararm field_set
+      field_name  -- content name,
+      );
+    EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_%I(searchValue %I) RETURNS SETOF %I AS $$ 
+      SELECT id, resource_id, name, created_at, updated_at FROM %I WHERE id IN (SELECT field_set_id FROM content WHERE name = %L AND "value" = searchValue AND version_id = 
+      (SELECT current_version_id((SELECT id FROM %I((SELECT %I())) WHERE id = content.field_set_id LIMIT 1 ), %L)));
+      $$ LANGUAGE SQL STABLE;',
+      (SELECT resource_field_set_name(resource_name, field_set)), -- FIRST PART OF FUNCTION NAME
+      field_name, -- BY
+      field_type, -- param type
+      (SELECT resource_field_set_name(resource_name, field_set)), -- returns set OF
+      field_set,
+      field_name,
+      (SELECT resource_field_set_name(resource_name, field_set)), -- SELECT id FROM,
+      resource_name, -- SELECT just resource
+      field_set
+      );
+  END
 $create_field_function$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION register_field() RETURNS TRIGGER AS $register_field$
@@ -23,6 +37,9 @@ CREATE OR REPLACE FUNCTION register_field() RETURNS TRIGGER AS $register_field$
       RAISE EXCEPTION 'Name cannot be null';
     END IF;
     PERFORM create_field_function((resource_name_from_id(NEW."resource_id")), NEW.field_set, NEW.name, NEW.type);
+    IF NEW.input_template IS NULL THEN
+      NEW.input_template = NEW.type;
+    END IF;
     RETURN NEW;
   END
 $register_field$ LANGUAGE plpgsql;

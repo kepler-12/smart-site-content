@@ -47,3 +47,24 @@ CREATE OR REPLACE FUNCTION iterate_version(field_set_id_value INTEGER, field_set
     RETURN new_version_id;
   END
 $iterate_version$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION delete_old_version(field_set_id INTEGER, field_set_table TEXT) returns void as $$
+  DELETE from versions WHERE id != (SELECT current_version_id(field_set_id, field_set_table));
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION delete_all_old_versions(field_set_table TEXT) returns void as $$
+  DECLARE
+    i record;
+  BEGIN
+     FOR i IN EXECUTE('SELECT * FROM ' || field_set_table)
+     LOOP
+      PERFORM delete_old_version(i.id, field_set_table);
+     END LOOP;
+  END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION all_field_set(field_set_table TEXT) returns record as $$
+  BEGIN
+    EXECUTE format('SELECT * FROM %I', field_set_table);
+  END
+$$LANGUAGE plpgsql;

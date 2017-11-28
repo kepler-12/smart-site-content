@@ -17,6 +17,8 @@ CREATE OR REPLACE FUNCTION register_resource() RETURNS TRIGGER AS $register_reso
           created_at timestamptz,
           updated_at timestamptz
         )', NEW.name, NEW.name);
+        PERFORM attach_field_set_to_resource(NEW.id, 'templates', '{"vue": "text"}');
+        UPDATE fields SET input_template = 'vueWysiwyg' WHERE resource_id = NEW.id AND field_set = "templates" AND name = "vue";
         EXECUTE format('CREATE FUNCTION %I () returns setof %I as $$
             SELECT id, name, created_at, updated_at FROM resources WHERE name = %L;
         $$ LANGUAGE SQL STABLE', NEW.name, NEW.name, NEW.name);

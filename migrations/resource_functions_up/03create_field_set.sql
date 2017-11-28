@@ -26,6 +26,13 @@ BEGIN
     field_set, -- FROM
     (SELECT(resource_name_by_id(resource_id))), -- WHERE
     field_set); 
+    EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_id(searchValue int4) RETURNS SETOF %I AS $$ 
+    SELECT id, resource_id, name, created_at, updated_at FROM %I WHERE id = searchValue AND resource_id = %L;
+    $$ LANGUAGE SQL STABLE;',
+    (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- FIRST PART OF FUNCTION NAME
+    (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- returns set OF
+    field_set, --from,
+    resource_id);
 END
 $field_set_resource_type$ LANGUAGE plpgsql;
 
@@ -68,3 +75,4 @@ CREATE OR REPLACE FUNCTION attach_field_set_to_resource(resource_id INTEGER, fie
     PERFORM resource_fields(field_set, resource_id);
   END
 $attach_field_set_to_resource$ LANGUAGE plpgsql;
+

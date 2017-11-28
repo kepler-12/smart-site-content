@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
       field_set -- second part of function name
     );
     EXECUTE format(
-    'CREATE OR REPLACE FUNCTION update_%I_%I (id INTEGER,' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major BOOLEAN DEFAULT false) RETURNS VOID AS $create_%I_%I$
+    'CREATE OR REPLACE FUNCTION update_%I_%I (id INTEGER,name text DEFAULT null' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major BOOLEAN DEFAULT false) RETURNS VOID AS $create_%I_%I$
       DECLARE
         i record;
         newversion INTEGER;
@@ -33,6 +33,8 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
     field_set, -- second part of function dolar
     field_set, -- field_set_table,
     resource_id, -- Resource Id table;
+    field_set, -- UPDATE FOR NAME
+    
     (SELECT text_for_update_field()), -- Format in array;
     (SELECT(resource_name_by_id(resource_id))), -- first part of function dolar
     field_set -- second part of function dolar
@@ -108,8 +110,8 @@ CREATE OR REPLACE FUNCTION field_set_as_parameters(field_set_value text, resourc
 $$ LANGUAGE SQL STABLE;
 
 -- Returns all fields as array; 
-CREATE OR REPLACE FUNCTION field_set_as_array(field_set text, resource_id INTEGER) RETURNS setof fields AS $$
-  SELECT * from fields WHERE "resource_id" = resource_id AND "field_set" = field_set;
+CREATE OR REPLACE FUNCTION field_set_as_array(field_set_table text, resource_id_value INTEGER) RETURNS setof fields AS $$
+  SELECT * from fields WHERE "resource_id" = resource_id_value AND "field_set" = field_set_table;
 $$ LANGUAGE  SQL STABLE;
 
 -- Turn all fields into json with {id: name}

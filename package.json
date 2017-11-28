@@ -2,7 +2,7 @@
   "_from": "github:kepler-12/smart-site-content#master",
   "_id": "smart-site-content@0.0.0",
   "_inBundle": false,
-  "_integrity": "sha1-kAeF8aSLE5c0woXo8+qScoNU2Pc=",
+  "_integrity": "sha1-DyZQP2hbfP/VQa5hHSdcXRH7kW8=",
   "_location": "/smart-site-content",
   "_phantomChildren": {},
   "_requested": {
@@ -17,9 +17,9 @@
     "#USER",
     "/"
   ],
-  "_resolved": "github:kepler-12/smart-site-content#6f4c1d196f51436533998b5346805df4724fd2ad",
+  "_resolved": "github:kepler-12/smart-site-content#1bcf9c667e24d9b0c7f7b0b89111df12b94c7328",
   "_spec": "github:kepler-12/smart-site-content#master",
-  "_where": "/Build/smart-site/node_modules",
+  "_where": "/Build/smart-site",
   "author": "",
   "bugs": {
     "url": "https://github.com/kepler-12/smart-site-content/issues"
@@ -31,7 +31,7 @@
     "sequelize": "^4.13.8"
   },
   "deprecated": false,
-  "description": "",
+  "description": "This package has migrations to create a database structure as laid out below. https://www.lucidchart.com/documents/edit/71dbbb57-0b47-4495-8f87-41d5ba31bbc8",
   "devDependencies": {
     "babel-eslint": "^7.2.3",
     "eslint": "^3.19.0",

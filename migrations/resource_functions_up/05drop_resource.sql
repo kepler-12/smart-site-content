@@ -13,4 +13,3 @@ $drop_resource$ LANGUAGE plpgsql;
 CREATE TRIGGER drop_resource BEFORE UPDATE OR DELETE ON resources
         FOR EACH ROW EXECUTE PROCEDURE drop_resource();
 
-    
