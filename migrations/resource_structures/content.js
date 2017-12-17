@@ -33,7 +33,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       value: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING(900000)
       },
       created_at: {
         allowNull: false,

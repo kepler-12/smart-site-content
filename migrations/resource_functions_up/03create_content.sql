@@ -15,18 +15,22 @@ CREATE OR REPLACE FUNCTION create_field_function (resource_name text, field_set 
       field_name  -- content name,
       );
     EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_%I(searchValue %I) RETURNS SETOF %I AS $$ 
-      SELECT id, resource_id, name, created_at, updated_at FROM %I WHERE id IN (SELECT field_set_id FROM content WHERE name = %L AND "value" = searchValue AND version_id = 
-      (SELECT current_version_id((SELECT id FROM %I((SELECT %I())) WHERE id = content.field_set_id LIMIT 1 ), %L)));
+      SELECT DISTINCT ON (versions.major_version) %I.*, versions.major_version, MAX(versions.minor_version) as minor_version 
+      FROM %I, versions WHERE %I.id IN (SELECT content.field_set_id FROM content, %I WHERE content.name = %L AND content."value" = searchValue AND %I.resource_id = %L)
+      GROUP BY %I.id, versions.major_version;
       $$ LANGUAGE SQL STABLE;',
       (SELECT resource_field_set_name(resource_name, field_set)), -- FIRST PART OF FUNCTION NAME
       field_name, -- BY
       field_type, -- param type
       (SELECT resource_field_set_name(resource_name, field_set)), -- returns set OF
-      field_set,
-      field_name,
-      (SELECT resource_field_set_name(resource_name, field_set)), -- SELECT id FROM,
-      resource_name, -- SELECT just resource
-      field_set
+      field_set, -- %I.*
+      field_set, -- FROM %I
+      field_set, -- WHERE %I.id
+      field_set, -- FROM content, %I
+      field_name, -- WHERE content.name = %L
+      field_set, -- %I.resource_id
+      resource_id, -- where resource_id =
+      field_set -- group by 
       );
   END
 $create_field_function$ LANGUAGE plpgsql;
@@ -37,9 +41,6 @@ CREATE OR REPLACE FUNCTION register_field() RETURNS TRIGGER AS $register_field$
       RAISE EXCEPTION 'Name cannot be null';
     END IF;
     PERFORM create_field_function((resource_name_from_id(NEW."resource_id")), NEW.field_set, NEW.name, NEW.type);
-    IF NEW.input_template IS NULL THEN
-      NEW.input_template = NEW.type;
-    END IF;
     RETURN NEW;
   END
 $register_field$ LANGUAGE plpgsql;
@@ -47,6 +48,11 @@ $register_field$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_resource_field_set() RETURNS TRIGGER AS $update_resource_field_set$
   BEGIN
     PERFORM resource_fields(NEW.field_set, NEW.resource_id);
+    IF NEW.field_set = 'templates' THEN
+      IF  NEW.input_template IS NULL THEN
+        NEW.input_template = NEW.type;
+      END IF;
+    END IF;
     RETURN NEW;
   END
 $update_resource_field_set$ LANGUAGE plpgsql;

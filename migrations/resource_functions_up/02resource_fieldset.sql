@@ -5,8 +5,9 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
       (SELECT(resource_name_by_id(resource_id))), -- first part of function name,
       field_set -- second part of function name
     );
-    EXECUTE format(
-    'CREATE OR REPLACE FUNCTION update_%I_%I (id INTEGER,name text DEFAULT null' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major BOOLEAN DEFAULT false) RETURNS VOID AS $create_%I_%I$
+    -- TODO: Add version as a parameter for update. So we can update a specific major version
+    EXECUTE format(  
+    'CREATE OR REPLACE FUNCTION update_%I_%I (id INTEGER,name text DEFAULT null, ' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major INTEGER DEFAULT 0) RETURNS VOID AS $update_%I_%I$
       DECLARE
         i record;
         newversion INTEGER;
@@ -22,19 +23,18 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
             id, -- field_set_id_value
             i.key,   -- field_id_value
             i.value, -- field_value
-            (SELECT(field_name_from_field_id(i.key))), -- field_name
-            newversion::integer); -- versionidx
+            (SELECT(field_name_from_field_id(i.key))), -- field_name  
+            newversion::integer); -- versionid or is it up here in update??E?E
         END LOOP;
       END 
-    $create_%I_%I$ LANGUAGE plpgsql',
+    $update_%I_%I$ LANGUAGE plpgsql',
     (SELECT(resource_name_by_id(resource_id))), -- first part of function name,
     field_set, -- second part of function name
     (SELECT(resource_name_by_id(resource_id))), -- first part of function dolar
     field_set, -- second part of function dolar
     field_set, -- field_set_table,
     resource_id, -- Resource Id table;
-    field_set, -- UPDATE FOR NAME
-    
+    --field_set, -- UPDATE FOR NAME
     (SELECT text_for_update_field()), -- Format in array;
     (SELECT(resource_name_by_id(resource_id))), -- first part of function dolar
     field_set -- second part of function dolar
@@ -46,7 +46,7 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
     );
     -- CREATE THE FUNCTION 
     EXECUTE format(
-    'CREATE OR REPLACE FUNCTION create_%I_%I (name TEXT,' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major BOOLEAN DEFAULT false) RETURNS VOID AS $create_%I_%I$
+    'CREATE OR REPLACE FUNCTION create_%I_%I (name TEXT,' || (SELECT field_set_as_parameters(field_set, resource_id)) ||', major INTEGER DEFAULT 0) RETURNS VOID AS $create_%I_%I$
       DECLARE
         i record;
         newversion INTEGER;
@@ -65,20 +65,20 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
             i.key,   -- field_id_value
             i.value, -- field_value
             (SELECT(field_name_from_field_id(i.key))), -- field_name
-            newversion::integer); -- versionidx
+            newversion::integer); -- versionidx IS THIS REAL LIFE?
         END LOOP;
-      END 
+      END
     $create_%I_%I$ LANGUAGE plpgsql',
-    (SELECT(resource_name_by_id(resource_id))), -- first part of function name,
-    field_set, -- second part of function name
-    (SELECT(resource_name_by_id(resource_id))), -- first part of function dolar
-    field_set, -- second part of function dolar
-    field_set, -- field_set_table,
-    resource_id, -- Resource Id table;
-    field_set, -- field_set_table,
-    (SELECT text_for_update_field()), -- Format in array;
-    (SELECT(resource_name_by_id(resource_id))), -- first part of function dolar
-    field_set -- second part of function dolar
+    (SELECT(resource_name_by_id(resource_id))), -- create_%I first part of function name,
+    field_set, -- _%I second part of function name
+    (SELECT(resource_name_by_id(resource_id))), -- $create_%I first part of function dolar
+    field_set, -- _%I$  second part of function dolar
+    field_set, -- field_set_table text := %L;,
+    resource_id, -- resource_id_value INTEGER := %L; -- 
+    field_set, --  INSERT INTO %I field_set_table,
+    (SELECT text_for_update_field()), -- EXECUTE format(%L Format in array;
+    (SELECT(resource_name_by_id(resource_id))), -- $create_%I first part of function dolar
+    field_set -- %I$ LANGUAGE plpgsq second part of function dolar
     );
 END
 $resource_fields$ LANGUAGE plpgsql;

@@ -2,7 +2,7 @@
 'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('fields', {
+    return queryInterface.createTable('templates', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -16,13 +16,7 @@ module.exports = {
           key: 'id'
         }
       },
-      field_set: {
-        type: Sequelize.STRING
-      },
       name: {
-        type: Sequelize.STRING
-      },
-      type: {
         type: Sequelize.STRING
       },
       created_at: {
@@ -35,24 +29,17 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP(3)')
       },
-      input_template: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        defaultValue: null
+      slots: {
+        type: Sequelize.JSON
       }
     })
-    .then(() => {
-      return queryInterface.addIndex('fields',
-        {
-          fields: ['field_set', 'name', 'resource_id'],
-          name: 'composite_index',
-          type: 'UNIQUE'
-        })
-    })
+      .then(result => {
+
+      })
   },
+
   down: (queryInterface, Sequelize) => {
-    console.log('FIELDS DOWN')
-    return queryInterface.dropTable('fields', {
+    return queryInterface.dropTable('templates', {
       cascade: true
     })
   }

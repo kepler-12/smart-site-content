@@ -1,3 +1,13 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+SET search_path = public, pg_catalog;
+
 --
 --
 --
@@ -18,32 +28,23 @@ $$ LANGUAGE SQL STABLE;
 
 
 -- ITERATE THE VERSION OF A SPECIFIC FIELD SET AND RETURN THE ID
-CREATE OR REPLACE FUNCTION iterate_version(field_set_id_value INTEGER, field_set_value text, major BOOLEAN DEFAULT false) RETURNS INTEGER AS $iterate_version$
-  DECLARE
+CREATE OR REPLACE FUNCTION iterate_version(field_set_id_value INTEGER, field_set_value text, major INTEGER DEFAULT 0) RETURNS INTEGER AS $iterate_version$
+  DECLARE 
     new_version_id INTEGER;
     version record;
-    major_version_int INTEGER;
+    major_version_int INTEGER := major;
     minor_version_int INTEGER;
   BEGIN 
-    SELECT id, major_version, minor_version FROM versions WHERE id = (SELECT current_version_id(field_set_id_value, field_set_value)) INTO version;
+    SELECT id, MAX(minor_version) as minor_version FROM versions 
+    WHERE major_version = major AND field_set_id = field_set_id_value AND field_set_table = field_set_value GROUP BY versions.id ORDER BY minor_version DESC LIMIT 1 INTO version;
     -- Default Values SHOULD BE DONe ANOThEr WAY
-    IF version.major_version IS NULL THEN
-        major_version_int = 0;
-    ELSE
-      major_version_int = version."major_version";
-    END IF;
     IF version.minor_version IS NULL THEN
-        minor_version_int = 0;
+        minor_version_int = 1;
     ELSE
-      minor_version_int = version.minor_version;
+      minor_version_int = version.minor_version + 1;
     END IF;
-    IF major THEN
-      INSERT INTO versions (field_set_table, field_set_id, major_version, minor_version)
-        VALUES (field_set_value, field_set_id_value, major_version_int + 1, 0) RETURNING id INTO new_version_id;
-    ELSE
-      INSERT INTO versions (field_set_table, field_set_id, major_version, minor_version)
-        VALUES (field_set_value, field_set_id_value, major_version_int, minor_version_int + 1) RETURNING id INTO new_version_id;
-    END IF;
+    INSERT INTO versions (field_set_table, field_set_id, major_version, minor_version)
+      VALUES (field_set_value, field_set_id_value, major_version_int, minor_version_int) RETURNING id INTO new_version_id;
     RETURN new_version_id;
   END
 $iterate_version$ LANGUAGE plpgsql;

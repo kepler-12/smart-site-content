@@ -2,7 +2,7 @@
   "_from": "github:kepler-12/smart-site-content#master",
   "_id": "smart-site-content@0.0.0",
   "_inBundle": false,
-  "_integrity": "sha1-DyZQP2hbfP/VQa5hHSdcXRH7kW8=",
+  "_integrity": "sha1-9fC94XDOMGyNoIjLx4xRN8TPfIM=",
   "_location": "/smart-site-content",
   "_phantomChildren": {},
   "_requested": {
@@ -17,7 +17,7 @@
     "#USER",
     "/"
   ],
-  "_resolved": "github:kepler-12/smart-site-content#1bcf9c667e24d9b0c7f7b0b89111df12b94c7328",
+  "_resolved": "github:kepler-12/smart-site-content#6a8346e622a41b1834e07a9d118ee3aeaef424f8",
   "_spec": "github:kepler-12/smart-site-content#master",
   "_where": "/Build/smart-site",
   "author": "",

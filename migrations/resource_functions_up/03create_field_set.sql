@@ -1,16 +1,22 @@
 --0 CREATES A FUNCTION  'resourceName'_'field_set' That returns all of 'resourceName'_'field_set' as the type
 CREATE OR REPLACE FUNCTION field_set_resource_type(field_set text, resource_id INTEGER) RETURNS VOID AS $field_set_resource_type$
 BEGIN
+    -- EXECUTE format('DROP TYPE IF EXISTS %I_%I',
+    -- (SELECT(resource_name_by_id(resource_id))), field_set);
     EXECUTE format('CREATE TYPE %I_%I AS (
     id integer,
     %I_id integer,
     name text,
     created_at timestamptz,
-    updated_at timestamptz
-    )',(SELECT(resource_name_by_id(resource_id))), field_set, field_set);
+    updated_at timestamptz,
+    '|| columns_on_field_Set_as_types(field_set) ||'
+    major_version integer,
+    minor_version integer)'
+    ,(SELECT(resource_name_by_id(resource_id))), field_set, field_set);
     EXECUTE format('CREATE OR REPLACE FUNCTION %I_%I (%I %I) returns setof %I_%I as $$ 
-      SELECT %I.id, %I."resource_id", %I.name, %I."created_at", %I."updated_at" 
-    FROM %I, resources WHERE resources.name = %L AND %I.resource_id = resources.id; 
+    SELECT %I.*, versions.major_version, MAX(versions.minor_version) as minor_version
+    FROM %I, resources, versions WHERE resources.name = %L AND %I.resource_id = resources.id AND versions.field_set_id = %I.id 
+    GROUP BY %I.id, versions.major_version, versions.field_set_id; 
     $$ LANGUAGE SQL stable;', 
     (SELECT(resource_name_by_id(resource_id))), -- Name before _
     field_set,    -- Name after _
@@ -18,21 +24,27 @@ BEGIN
     (SELECT(resource_name_by_id(resource_id))), -- Second PARAMETER
     (SELECT(resource_name_by_id(resource_id))), -- Returns set of before _
     field_set, -- returns set of after _
-    field_set, --id
-    field_set, --resource_id
-    field_set, --name
-    field_set, --created_at
-    field_set, --updated_at
-    field_set, -- FROM
-    (SELECT(resource_name_by_id(resource_id))), -- WHERE
+    field_set, --%I.* id
+    field_set, -- FROM %I
+    (SELECT(resource_name_by_id(resource_id))), -- resources.name = %L
+    field_set, -- Group by id
+    field_set, -- WHERE
     field_set); 
-    EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_id(searchValue int4) RETURNS SETOF %I AS $$ 
-    SELECT id, resource_id, name, created_at, updated_at FROM %I WHERE id = searchValue AND resource_id = %L;
+    EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_id(searchValue int4, major int4 DEFAULT 0) RETURNS SETOF %I AS $$ 
+    SELECT DISTINCT ON (versions.major_version)  %I.*, versions.major_version, MAX(versions.minor_version) as minor_version
+    FROM %I, versions WHERE %I.id = searchValue AND %I.resource_id = %L AND versions.major_version = major
+    GROUP BY %I.id, versions.major_version;
     $$ LANGUAGE SQL STABLE;',
     (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- FIRST PART OF FUNCTION NAME
     (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- returns set OF
+    field_set, -- SELECT 
     field_set, --from,
-    resource_id);
+    field_set, --%I.id,
+    field_set, --%I.resource_id,
+    resource_id, -- = %L
+    field_set, --group by,
+    field_set --group by,
+    );
 END
 $field_set_resource_type$ LANGUAGE plpgsql;
 
@@ -72,7 +84,27 @@ CREATE OR REPLACE FUNCTION attach_field_set_to_resource(resource_id INTEGER, fie
         VALUES(resource_id::INTEGER, i.key, i.value, field_set);
       END LOOP;
     END IF;
-    PERFORM resource_fields(field_set, resource_id);
+    -- PERFORM resource_fields(field_set, resource_id);
   END
 $attach_field_set_to_resource$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION columns_on_field_Set_as_types(field_set TEXT) returns TEXT as $$
+  DECLARE
+    s TEXT := (SELECT string_agg(column_name || ' ' || data_type, ', ')
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = field_set 
+      AND column_name != 'id'
+      AND column_name != 'name'
+      AND column_name != 'resource_id'
+      AND column_name != 'updated_at'
+      AND column_name != 'created_at');
+  BEGIN
+    if (s <> '') IS NOT TRUE
+    THEN
+      return s;
+    ELSE
+      return s || ',';
+    END IF;
+  END
+$$ LANGUAGE plpgsql STABLE;

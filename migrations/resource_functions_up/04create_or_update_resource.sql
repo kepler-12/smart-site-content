@@ -15,16 +15,19 @@ CREATE OR REPLACE FUNCTION register_resource() RETURNS TRIGGER AS $register_reso
           %I_id integer,
           name text,
           created_at timestamptz,
-          updated_at timestamptz
+          updated_at timestamptz,
+          major_version integer,
+          minor_version integer
         )', NEW.name, NEW.name);
         PERFORM attach_field_set_to_resource(NEW.id, 'templates', '{"vue": "text"}');
-        UPDATE fields SET input_template = 'vueWysiwyg' WHERE resource_id = NEW.id AND field_set = "templates" AND name = "vue";
+        UPDATE fields SET input_template = 'vueWysiwyg' WHERE resource_id = NEW.id AND field_set = 'templates' AND name = 'vue';
         EXECUTE format('CREATE FUNCTION %I () returns setof %I as $$
             SELECT id, name, created_at, updated_at FROM resources WHERE name = %L;
         $$ LANGUAGE SQL STABLE', NEW.name, NEW.name, NEW.name);
         EXECUTE format('CREATE FUNCTION %I_items (%I %I) returns setof %I_items as $$
-        SELECT items.id, items."resource_id", items.name, items."created_at", items."updated_at" 
-        FROM items, resources WHERE resources.name = %L AND items.resource_id = resources.id; 
+        SELECT items.*, versions.major_version, MAX(versions.minor_version)
+        FROM items, resources, versions WHERE resources.name = %L AND items.resource_id = resources.id AND versions.field_set_id = items.id
+        GROUP BY items.id, versions.major_version, versions.field_set_id; 
         $$ LANGUAGE SQL stable;', NEW.name, NEW.name, NEW.name, NEW.name, NEW.name);
         EXECUTE format('CREATE OR REPLACE FUNCTION %I_resource (item %I) returns setof resources as $$
         SELECT * from resources where name = %L
@@ -33,7 +36,7 @@ CREATE OR REPLACE FUNCTION register_resource() RETURNS TRIGGER AS $register_reso
     END;
 $register_resource$ LANGUAGE plpgsql;
 
-CREATE TRIGGER register_resource BEFORE INSERT OR UPDATE ON resources
+CREATE TRIGGER register_resource AFTER INSERT OR UPDATE ON resources
         FOR EACH ROW EXECUTE PROCEDURE register_resource(); 
 
 CREATE OR REPLACE FUNCTION resource_name_by_id(resource_id int)RETURNS text as $$

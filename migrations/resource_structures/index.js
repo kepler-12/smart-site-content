@@ -6,10 +6,11 @@ const migrations = [
   // require('./templates'),
   require('./versions'),
   require('./items'),
+  require('./templates'),
   // require('./itemHasItem'),
   // require('./itemVersions'),
   require('./fields'),
-  require('./content'),  
+  require('./content'),
   require('./resourceFunctions.js')
 ]
 
