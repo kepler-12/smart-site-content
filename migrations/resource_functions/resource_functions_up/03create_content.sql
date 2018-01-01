@@ -32,6 +32,24 @@ CREATE OR REPLACE FUNCTION create_field_function (resource_name text, field_set 
       resource_id, -- where resource_id =
       field_set -- group by 
       );
+      EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_any_%I(searchValue %I[]) RETURNS SETOF %I AS $$ 
+      SELECT DISTINCT ON (versions.major_version) %I.*, versions.major_version, MAX(versions.minor_version) as minor_version 
+      FROM %I, versions WHERE %I.id IN (SELECT content.field_set_id FROM content, %I WHERE content.name = %L AND content."value" = ANY (searchValue) AND %I.resource_id = %L)
+      GROUP BY %I.id, versions.major_version;
+      $$ LANGUAGE SQL STABLE;',
+      (SELECT resource_field_set_name(resource_name, field_set)), -- FIRST PART OF FUNCTION NAME
+      field_name, -- BY
+      field_type, -- param type
+      (SELECT resource_field_set_name(resource_name, field_set)), -- returns set OF
+      field_set, -- %I.*
+      field_set, -- FROM %I
+      field_set, -- WHERE %I.id
+      field_set, -- FROM content, %I
+      field_name, -- WHERE content.name = %L
+      field_set, -- %I.resource_id
+      resource_id, -- where resource_id =
+      field_set -- group by 
+      );
   END
 $create_field_function$ LANGUAGE plpgsql;
 

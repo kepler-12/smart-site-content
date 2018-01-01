@@ -10,8 +10,7 @@ const migrations = [
   // require('./itemHasItem'),
   // require('./itemVersions'),
   require('./fields'),
-  require('./content'),
-  require('./resourceFunctions.js')
+  require('./content')
 ]
 
 module.exports = {

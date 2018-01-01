@@ -1,18 +1,18 @@
 --0 CREATES A FUNCTION  'resourceName'_'field_set' That returns all of 'resourceName'_'field_set' as the type
 CREATE OR REPLACE FUNCTION field_set_resource_type(field_set text, resource_id INTEGER) RETURNS VOID AS $field_set_resource_type$
 BEGIN
-    -- EXECUTE format('DROP TYPE IF EXISTS %I_%I',
-    -- (SELECT(resource_name_by_id(resource_id))), field_set);
     EXECUTE format('CREATE TYPE %I_%I AS (
     id integer,
     %I_id integer,
     name text,
     created_at timestamptz,
-    updated_at timestamptz,
-    '|| columns_on_field_Set_as_types(field_set) ||'
+    updated_at timestamptz,'|| columns_on_field_set_as_types(field_set) ||'
     major_version integer,
-    minor_version integer)'
-    ,(SELECT(resource_name_by_id(resource_id))), field_set, field_set);
+    minor_version integer)',
+    (SELECT(resource_name_by_id(resource_id))), -- first part of name %I_
+    field_set, -- second part of name _%I
+    field_set -- id %I_id integer
+    );
     EXECUTE format('CREATE OR REPLACE FUNCTION %I_%I (%I %I) returns setof %I_%I as $$ 
     SELECT %I.*, versions.major_version, MAX(versions.minor_version) as minor_version
     FROM %I, resources, versions WHERE resources.name = %L AND %I.resource_id = resources.id AND versions.field_set_id = %I.id 
@@ -37,12 +37,25 @@ BEGIN
     $$ LANGUAGE SQL STABLE;',
     (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- FIRST PART OF FUNCTION NAME
     (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- returns set OF
-    field_set, -- SELECT 
-    field_set, --from,
-    field_set, --%I.id,
+    field_set, -- SELECT %I.*
+    field_set, --FROM %I,
+    field_set, --WHERE %I.id,
     field_set, --%I.resource_id,
-    resource_id, -- = %L
-    field_set, --group by,
+    resource_id, -- .resource_id = %L
+    field_set --group by,
+    );
+        EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_any_id(searchValue int4[], major int4 DEFAULT 0) RETURNS SETOF %I AS $$ 
+    SELECT  %I.*, versions.major_version, MAX(versions.minor_version) as minor_version
+    FROM %I, versions WHERE %I.id = ANY (searchValue) AND %I.resource_id = %L AND versions.major_version = major
+    GROUP BY %I.id, versions.major_version;
+    $$ LANGUAGE SQL STABLE;',
+    (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- FIRST PART OF FUNCTION NAME
+    (SELECT resource_field_set_name((SELECT(resource_name_by_id(resource_id))), field_set)), -- returns set OF
+    field_set, -- SELECT %I.*
+    field_set, --FROM %I,
+    field_set, --WHERE %I.id,
+    field_set, --%I.resource_id,
+    resource_id, -- .resource_id = %L
     field_set --group by,
     );
 END
@@ -69,7 +82,7 @@ CREATE OR REPLACE FUNCTION create_field_set(name TEXT, fields TEXT) RETURNS VOID
   $create_field_set$ LANGUAGE plpgsql;
 
 --2 ATTACH A FIELD SET TO A RESOURCE TYPE
-CREATE OR REPLACE FUNCTION attach_field_set_to_resource(resource_id INTEGER, field_set TEXT, fields TEXT) 
+CREATE OR REPLACE FUNCTION attach_field_set_to_resource(resource_id INTEGER, field_set TEXT, fields TEXT DEFAULT NULL) 
   RETURNS void AS $attach_field_set_to_resource$
   DECLARE
     i record;
@@ -78,11 +91,13 @@ CREATE OR REPLACE FUNCTION attach_field_set_to_resource(resource_id INTEGER, fie
     IF (SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA = 'public' AND table_name = field_set) IS NULL THEN
       RAISE EXCEPTION 'There is no field set ';
     ELSE
-      FOR i IN SELECT * FROM json_each_text(fields::json)
-      LOOP
-        INSERT INTO fields ("resource_id", "name", "type",  "field_set") 
-        VALUES(resource_id::INTEGER, i.key, i.value, field_set);
-      END LOOP;
+      IF fields != NULL THEN
+        FOR i IN SELECT * FROM json_each_text(fields::json)
+        LOOP
+          INSERT INTO fields ("resource_id", "name", "type",  "field_set") 
+          VALUES(resource_id::INTEGER, i.key, i.value, field_set);
+        END LOOP;
+      END IF;
     END IF;
     -- PERFORM resource_fields(field_set, resource_id);
   END
@@ -102,7 +117,7 @@ CREATE OR REPLACE FUNCTION columns_on_field_Set_as_types(field_set TEXT) returns
   BEGIN
     if (s <> '') IS NOT TRUE
     THEN
-      return s;
+      return ' ';
     ELSE
       return s || ',';
     END IF;

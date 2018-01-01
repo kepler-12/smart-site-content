@@ -1,7 +1,7 @@
 'use strict'
 const path = require('path')
-const upFolder = path.join(__dirname, '../resource_functions_up')
-const downFolder = path.join(__dirname, '../resource_functions_down')
+const upFolder = path.join(__dirname, './resource_functions_up')
+const downFolder = path.join(__dirname, './resource_functions_down')
 console.log()
 const upLoop = require('../../lib/folderLoopSync.js')(upFolder)
 const downLoop = require('../../lib/folderLoopSync.js')(downFolder)
