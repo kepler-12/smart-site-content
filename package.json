@@ -7,19 +7,18 @@
   "_phantomChildren": {},
   "_requested": {
     "type": "git",
-    "raw": "smart-site-content@git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
-    "name": "smart-site-content",
-    "escapedName": "smart-site-content",
+    "raw": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
     "rawSpec": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
     "saveSpec": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
     "fetchSpec": "https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
-    "gitCommittish": "master"
+    "gitCommittish": null
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_resolved": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git#202d1763ff586506a043947ddfc2e5c81dae3d4d",
-  "_spec": "smart-site-content@git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
+  "_resolved": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git#aa127004772f6e827bc824f0ae45084dd1de95eb",
+  "_spec": "git+https://6bb832cd9260456af396c01a2328277c0c2be5c0@github.com/kepler-12/smart-site-content.git",
   "_where": "/Build/smart-site",
   "author": "",
   "bugs": {
