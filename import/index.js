@@ -1,16 +1,22 @@
 #! /usr/bin/env node
 
 const chalk = require('chalk')
-const program = require('commander')
+var program = require('commander');
 const csvToDatabse = require('./addCsvToDatabase')
+
 program
-.version('0.0,1')
+.version('0.0,2')
 .option('-f, --file [path]', 'CSV file to import')
-.option('-r, --resource [name]', 'Resource to import into')
-.option('-c --createFields', 'Create New fields for columns that are not present in the DB')
+.option('-r, --resourceId [int]', 'Resource to import into')
+.option('-u, --uri [uri]', 'the uri for the apollo connection')
+.option('-s, --fieldset [name]', 'the field set')
+//.option('-c, --createfields', 'Create New fields for columns that are not present in the DB')
 .parse(process.argv)
 
-console.log(program.file)
-console.log(program.resource)
-console.log(program.createFields)
-csvToDatabse({csvFile: program.file})
+
+csvToDatabse({
+  file: program.file, 
+  resourceId: program.resourceId, 
+  uri: program.uri, 
+  //createFields: program.createfields
+})

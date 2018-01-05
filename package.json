@@ -26,10 +26,16 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "chalk": "^2.1.0",
+    "apollo": "^0.2.2",
+    "apollo-client-preset": "^1.0.5",
+    "chalk": "^2.3.0",
     "commander": "^2.12.2",
     "csvtojson": "^1.1.9",
     "dotenv": "^4.0.0",
+    "graphql": "^0.12.3",
+    "graphql-tag": "^2.6.1",
+    "lodash": "^4.17.4",
+    "node-fetch": "^1.7.3",
     "sequelize": "^4.13.8"
   },
   "deprecated": false,
