@@ -1,7 +1,7 @@
 --0 CREATES A FUNCTION  'resourceName'_'field_set' That returns all of 'resourceName'_'field_set' as the type
 CREATE OR REPLACE FUNCTION field_set_resource_type(field_set text, resource_id INTEGER) RETURNS VOID AS $field_set_resource_type$
 DECLARE
-  resource_name text := (SELECT(resource_name_by_id(resource_id)))
+  resource_name text := (SELECT(resource_name_by_id(resource_id)));
 BEGIN
     EXECUTE format('CREATE TYPE %I_%I AS (
     id integer,
@@ -11,7 +11,7 @@ BEGIN
     updated_at timestamptz,'|| columns_on_field_set_as_types(field_set) ||'
     major_version integer,
     minor_version integer)',
-    (SELECT(resource_name_by_id(resource_id))), -- first part of name %I_
+    resource_name, -- first part of name %I_
     field_set, -- second part of name _%I
     field_set -- id %I_id integer
     );
