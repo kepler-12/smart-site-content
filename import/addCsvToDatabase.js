@@ -8,7 +8,7 @@ const createFieldsOnResource = require('./createFieldsOnResource')
 const resourceNameById = require('./resourceNameById')
 fetch = require('node-fetch')
 
-module.exports = async ({file, resourceId, createFields, uri, fieldSet = 'items'}) => {
+module.exports = async ({file, resourceId, createFields, uri, fieldSet}) => {
   //Why not promise csvtojson????
   const apolloClient = new ApolloClient({
     link: new HttpLink({ uri }),

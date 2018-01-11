@@ -18,5 +18,6 @@ csvToDatabse({
   file: program.file, 
   resourceId: program.resourceId, 
   uri: program.uri, 
+  fieldSet: program.fieldset
   //createFields: program.createfields
 })

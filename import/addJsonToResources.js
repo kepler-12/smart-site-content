@@ -6,13 +6,14 @@ module.exports = async ({apolloClient, resourceName, fieldSet, jsonArray}) => {
   return await createResource({apolloClient,fieldSet, resourceName, jsonArray, n: 0})
 }
 
-async function createResource({apolloClient, resourceName, fieldSet,jsonArray, n}){
+async function createResource({apolloClient, resourceName, fieldSet, jsonArray, n}){
   console.log(jsonArray.length, n, jsonArray)
   if (jsonArray.length <= n ) return false
   const name = _.startCase(resourceName) + '_' +fieldSet
   name.replace(/\s+/g, '')
   console.log(name)
-  if (!jsonArray[n].name) {
+  if (!jsonArray[n].name && !jsonArray[n].Name) {
+    delete jsonArray[n].Name
     jsonArray[n].name = jsonArray[n].title || "NO NAME PROVIDED"
   }
  const mutation = `mutation {
@@ -28,7 +29,7 @@ async function createResource({apolloClient, resourceName, fieldSet,jsonArray, n
   }`
   console.log(mutation)
 
-  
+
   try {
     const test = await apolloClient.mutate({
       mutation: gql`${mutation}`
