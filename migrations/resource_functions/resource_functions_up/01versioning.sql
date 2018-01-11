@@ -49,6 +49,18 @@ CREATE OR REPLACE FUNCTION iterate_version(field_set_id_value INTEGER, field_set
   END
 $iterate_version$ LANGUAGE plpgsql;
 
+CREATE TYPE latest_versions AS (
+  major_version INTEGER,
+  minor_version INTEGER,
+  field_set_id INTEGER,
+  id INTEGER
+);
+
+CREATE OR REPLACE FUNCTION latest_versions(field_set text) returns setof latest_versions as $$
+  SELECT major_version, MAX(minor_version) AS minor_version, field_set_id, MAX(id) AS id  FROM versions WHERE field_set_table = field_set GROUP BY major_version, field_set_id;
+$$ LANGUAGE SQL STABLE; 
+
+
 CREATE OR REPLACE FUNCTION delete_old_version(field_set_id INTEGER, field_set_table TEXT) returns void as $$
   DELETE from versions WHERE id != (SELECT current_version_id(field_set_id, field_set_table));
 $$ LANGUAGE SQL;
