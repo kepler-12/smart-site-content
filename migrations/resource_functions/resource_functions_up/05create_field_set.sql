@@ -59,9 +59,9 @@ BEGIN
     field_set --group by,
     );
     SELECT create_search_function(field_set, resource_name, 'search_exact_content');
-    SELECT create_search_function(field_set, resource_name, 'search_integer_between', '_between', 'INTEGER')
-    SELECT create_search_function(field_set, resource_name, 'search_integer_greater_than', '_geater_than', 'INTEGER')
-    SELECT create_search_function(field_set, resource_name, 'search_integer_less_than', '_less_than', 'INTEGER')
+    SELECT create_search_function(field_set, resource_name, 'search_integer_between', '_between', 'INTEGER');
+    SELECT create_search_function(field_set, resource_name, 'search_integer_greater_than', '_geater_than', 'INTEGER');
+    SELECT create_search_function(field_set, resource_name, 'search_integer_less_than', '_less_than', 'INTEGER');
 END
 $field_set_resource_type$ LANGUAGE plpgsql;
 
