@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION resource_fields(field_set text, resource_id INTEGER) 
             id, -- field_set_id_value
             i.key,   -- field_id_value
             i.value, -- field_value
-            (SELECT(field_name_from_field_id(i.key))), -- field_name  
+            (SELECT(field_name_from_field_id(i.key))), -- field_na  me  
             newversion::integer); -- versionid or is it up here in update??E?E
         END LOOP;
       END 

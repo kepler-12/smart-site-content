@@ -1,5 +1,7 @@
 --0 CREATES A FUNCTION  'resourceName'_'field_set' That returns all of 'resourceName'_'field_set' as the type
 CREATE OR REPLACE FUNCTION field_set_resource_type(field_set text, resource_id INTEGER) RETURNS VOID AS $field_set_resource_type$
+DECLARE
+  resource_name text := (SELECT(resource_name_by_id(resource_id)))
 BEGIN
     EXECUTE format('CREATE TYPE %I_%I AS (
     id integer,
@@ -44,7 +46,7 @@ BEGIN
     resource_id, -- .resource_id = %L
     field_set --group by,
     );
-        EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_any_id(searchValue int4[], major int4 DEFAULT 0) RETURNS SETOF %I AS $$ 
+    EXECUTE format('CREATE OR REPLACE FUNCTION %I_by_any_id(searchValue int4[], major int4 DEFAULT 0) RETURNS SETOF %I AS $$ 
     SELECT  %I.*, versions.major_version, MAX(versions.minor_version) as minor_version
     FROM %I, versions WHERE %I.id = ANY (searchValue) AND %I.resource_id = %L AND versions.major_version = major
     GROUP BY %I.id, versions.major_version;
