@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION search_integer_between(field_set text, resource_id in
   END
 $$ LANGUAGE plpgsql STABLE; 
 
-CREATE OR REPLACE FUNCTION search_integer_greater_than(field_set text, resource_id int, field_name text, search_value integer[]) returns setof content_results as $$
+CREATE OR REPLACE FUNCTION search_integer_greater_than(field_set text, resource_id int, field_name text, search_value integer) returns setof content_results as $$
   DECLARE
   BEGIN
     RETURN QUERY 
@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION search_integer_greater_than(field_set text, resource_
       GROUP BY field_set_id', 
       field_set, -- FROM %I,
       field_name, -- content.name = %L 
-      search_value[1], -- content."value" = %L,
+      search_value, -- content."value" = %L,
       field_set, --%I.resource_id 
       resource_id -- resource_id = %L
       );

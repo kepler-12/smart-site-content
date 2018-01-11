@@ -41,12 +41,10 @@ CREATE OR REPLACE FUNCTION create_field_function (resource_name text, field_set 
   END
 $create_field_function$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION latest_version(field_set text) 
-
 CREATE TYPE content_results AS (
   field_set_id INTEGER,
   version_id INTEGER
-)
+);
 
 CREATE TYPE latest_versions AS (
   major_version INTEGER,
